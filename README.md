@@ -2,8 +2,7 @@
 
 <p align="center">
 
-  [![Build Status](https://travis-ci.org/Rebolon/php-sf-flex-webpack-encore-vuejs.png?branch=master)](https://travis-ci.org/Rebolon/php-sf-flex-webpack-encore-vuejs)
-  [![Known Vulnerabilities](https://snyk.io/test/github/rebolon/php-sf-flex-webpack-encore-vuejs/badge.svg?targetFile=package.json)](https://snyk.io/test/github/rebolon/php-sf-flex-webpack-encore-vuejs?targetFile=package.json)
+  [![Build Status](https://travis-ci.org/Rebolon/ApiJsonParamConverterComponent.svg?branch=master)](https://travis-ci.org/Rebolon/php-sf-flex-webpack-encore-vuejs)
 
 </p>
 
