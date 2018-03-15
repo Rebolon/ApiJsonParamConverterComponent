@@ -18,6 +18,8 @@
         "phpunit/phpunit": "^6.5",
         "roave/security-advisories": "dev-master",
         "sensiolabs/security-checker": "^4.1",
+        "friendsofphp/php-cs-fixer": "^2.10",
+        "squizlabs/PHP_CodeSniffer": "^3.2",
         "doctrine/common": "^2.8.1"
     },
     "minimum-stability": "dev",
