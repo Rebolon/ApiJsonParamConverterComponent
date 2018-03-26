@@ -90,13 +90,20 @@ Here are some samples of json sent to the custom routes:
                 "lastname": "Kyprianou"
             }
         }],
-        "serie": 4
+        "serie": {
+            "id": 4,
+            "name": "whatever because the paramConverte will only take care of the id property"
     }
 }
 ```
 
 The AbstractConverter is able to deduplicate entity (if there is more than one the same entity in the json). It's also able to
-retreive information from database if you put ID instead of object inside the json (2nd sample above).
+retreive information from database if:
+ * you put ID instead of object inside the json (2nd sample above with editors[0].editor or authors[0].role)
+ * you send an object that contains the id field (or any other id prop name that you define in the specific Converter)
+
+You can have a look at the tests to get more informations about how to use this component. I have wrote those test with 
+sample Entities and Converter to make it more understandable.
 
 ## configuration
 

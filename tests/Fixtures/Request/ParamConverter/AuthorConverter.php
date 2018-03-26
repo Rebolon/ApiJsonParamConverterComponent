@@ -23,7 +23,7 @@ class AuthorConverter extends AbstractConverter
      */
     public function getEzPropsName(): array
     {
-        return ['id', 'firstname', 'lastname', ];
+        return ['firstname', 'lastname', ];
     }
 
     /**

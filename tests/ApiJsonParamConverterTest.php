@@ -64,6 +64,21 @@ JSON;
 JSON;
 
     /**
+     * @var string to test that the ParamConverter are abled to reuse entity from database
+     */
+    public $bodyOkWithExistingEntitiesWithFullProps = <<<JSON
+{
+    "book": {
+        "title": "Oh my god, how simple it is !",
+        "serie": {
+            "id": 4,
+            "name": "whatever, it won't be read"
+        }
+    }
+}
+JSON;
+
+    /**
      * @var string allow to test a failed HTTP Post with expected JSON content
      */
 public $bodyNoAuthor = <<<JSON
@@ -113,6 +128,34 @@ JSON;
     public function testWithExistingEntity()
     {
         $content = json_decode($this->bodyOkWithExistingEntities);
+
+        $serie = new Serie();
+        $serie->setName('Harry Potter');
+
+        $repository = $this->createMock(ObjectRepository::class);
+        $repository->expects($this->any())
+            ->method('find')
+            ->will($this->returnValue($serie));
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->any())
+            ->method('getRepository')
+            ->will($this->returnValue($repository));
+
+        $bookConverter = $this->getBookConverter($entityManager);
+
+        $book = $bookConverter->initFromRequest(json_encode($content->book), 'book');
+
+        $this->assertEquals($content->book->title, $book->getTitle());
+        $this->assertEquals($serie->getName(), $book->getSerie()->getName());
+    }
+
+    /**
+     * @group git-pre-push
+     */
+    public function testWithExistingEntityButWithFullProps()
+    {
+        $content = json_decode($this->bodyOkWithExistingEntitiesWithFullProps);
 
         $serie = new Serie();
         $serie->setName('Harry Potter');
