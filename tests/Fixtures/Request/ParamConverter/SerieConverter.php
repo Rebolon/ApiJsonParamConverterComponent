@@ -22,7 +22,7 @@ class SerieConverter extends AbstractConverter
      */
     public function getEzPropsName(): array
     {
-        return ['id', 'name', ];
+        return ['name', ];
     }
 
     /**

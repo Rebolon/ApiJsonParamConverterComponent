@@ -52,6 +52,12 @@ abstract class AbstractConverter implements ConverterInterface
     protected static $propertyPath = [];
 
     /**
+     * Default name of the id property
+     * @var string
+     */
+    protected $idProperty = 'id';
+
+    /**
      * AbstractConverter constructor.
      * @param ValidatorInterface $validator
      * @param SerializerInterface $serializer
@@ -107,6 +113,12 @@ abstract class AbstractConverter implements ConverterInterface
         return true;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getIdProperty(): string {
+        return $this->idProperty;
+    }
 
     /**
      * @inheritdoc
@@ -118,7 +130,18 @@ abstract class AbstractConverter implements ConverterInterface
 
             $json = $this->checkJsonOrArray($jsonOrArray);
 
-            if (!is_array($json)) {
+            $idPropertyIsInJson = false;
+            if (!is_array($json)
+                || ($idPropertyIsInJson = array_key_exists($this->getIdProperty(), $json))
+            ) {
+                /**
+                 * We don't care of other properties. We don't accept update on sub-entity, we can create or re-use
+                 * So here we just clean json and replace it with the id content
+                 */
+                if ($idPropertyIsInJson) {
+                    $json = $json[$this->getIdProperty()];
+                }
+
                 array_pop(self::$propertyPath);
 
                 return $this->getFromDatabase($json);
@@ -369,7 +392,7 @@ abstract class AbstractConverter implements ConverterInterface
             return $entityExists;
         }
 
-        throw new \InvalidArgumentException(sprintf('Editor %d doesn\'t exists', $id));
+        throw new \InvalidArgumentException(sprintf(static::RELATED_ENTITY . ' %d doesn\'t exists', $id));
     }
 
     /**

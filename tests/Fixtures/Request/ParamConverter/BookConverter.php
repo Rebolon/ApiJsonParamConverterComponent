@@ -61,7 +61,7 @@ class BookConverter extends AbstractConverter
      */
     public function getEzPropsName(): array
     {
-        return ['id', 'title', ];
+        return ['title', ];
     }
 
     /**

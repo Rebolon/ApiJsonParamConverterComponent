@@ -49,7 +49,7 @@ class ProjectBookCreationConverter extends AbstractConverter
      */
     public function getEzPropsName(): array
     {
-        return ['id', ];
+        return [];
     }
 
     /**
