@@ -108,9 +108,6 @@ JSON;
         $this->assertEquals($content->book->serie->name, $book->getSerie()->getName());
         $this->assertCount(3, $book->getAuthors());
 
-        $authors['marc'] = $book->getAuthors()[0];
-        $authors['paul'] = $book->getAuthors()[2];
-
         $this->assertEquals($content->book->authors[0]->author->firstname, $book->getAuthors()[0]->getAuthor()->getFirstname());
         $this->assertEquals($content->book->authors[0]->author->lastname, $book->getAuthors()[0]->getAuthor()->getLastname());
 
