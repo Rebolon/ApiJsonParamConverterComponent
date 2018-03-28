@@ -14,7 +14,7 @@ You need PHP (7.x), composer, and Symfony 4
 
 Working with ApiPlatform, i wanted to use custom POST route where i could send complex json data which represents nested entities.
 To realize this i choose to use the ParamConverters. So with little convention (json props must be the same as php entity props)
-and few ParamConverters (one per entity) extending the Rebolon/Request/AbstractConverter, it works !
+and few ParamConverters (one per entity) extending the Rebolon/Request/ItemAbstractConverter (for one entity) or ListAbstractConverter (for collection of entities), it works !
 
 Here are some samples of json sent to the custom routes:
 
