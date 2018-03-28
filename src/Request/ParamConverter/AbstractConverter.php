@@ -121,7 +121,7 @@ abstract class AbstractConverter implements ConverterInterface
     }
 
     /**
-     * @inheritdoc
+     * @deprecated Use ItemAbstractConverter::initFromRequest or ListAbstractConverter::initFromRequest
      */
     public function initFromRequest($jsonOrArray, $propertyPath)
     {
@@ -398,7 +398,7 @@ abstract class AbstractConverter implements ConverterInterface
     /**
      * @return string
      */
-    private function getPropertyPath(): string
+    final protected function getPropertyPath(): string
     {
         $raw = implode('.', self::$propertyPath);
 

@@ -3,7 +3,7 @@
 namespace Rebolon\Tests\Fixtures\Request\ParamConverter;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Rebolon\Request\ParamConverter\AbstractConverter;
+use Rebolon\Request\ParamConverter\ItemAbstractConverter;
 use Rebolon\Tests\Fixtures\Entity\Book;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  *
  * @package Rebolon\Request\ParamConverter
  */
-class BookConverter extends AbstractConverter
+class BookConverter extends ItemAbstractConverter
 {
     const NAME = 'book';
 

@@ -3,9 +3,9 @@
 namespace Rebolon\Tests\Fixtures\Request\ParamConverter;
 
 use Rebolon\Tests\Fixtures\Entity\Author;
-use Rebolon\Request\ParamConverter\AbstractConverter;
+use Rebolon\Request\ParamConverter\ItemAbstractConverter;
 
-class AuthorConverter extends AbstractConverter
+class AuthorConverter extends ItemAbstractConverter
 {
     const NAME = 'author';
 

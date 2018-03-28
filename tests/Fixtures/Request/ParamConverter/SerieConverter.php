@@ -3,9 +3,9 @@
 namespace Rebolon\Tests\Fixtures\Request\ParamConverter;
 
 use Rebolon\Tests\Fixtures\Entity\Serie;
-use Rebolon\Request\ParamConverter\AbstractConverter;
+use Rebolon\Request\ParamConverter\ItemAbstractConverter;
 
-class SerieConverter extends AbstractConverter
+class SerieConverter extends ItemAbstractConverter
 {
     const NAME = 'serie';
 
