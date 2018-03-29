@@ -14,6 +14,13 @@ use Symfony\Component\Validator\ConstraintViolationList;
 abstract class ListAbstractConverter extends AbstractConverter
 {
     /**
+     * list of entities that represents associative tables can be updated only if they are just after the main root element
+     * i can identify it with the property path: book > editors > [x] which means rootEntity > associativeEntities > EntityInList
+     * so it's the third item in propertyPath
+     */
+    const ROOT_LIMIT_FOR_UPDATE = 3;
+
+    /**
      * @inheritdoc
      */
     public function initFromRequest($jsonOrArray, $propertyPath)
@@ -33,7 +40,32 @@ abstract class ListAbstractConverter extends AbstractConverter
             foreach ($listItems as $item) {
                 self::$propertyPath[count(self::$propertyPath)] = '[' . count($entities) . ']';
 
-                $entities[] = $this->buildEntity($item);
+                $idPropertyIsInJson = false;
+                $entity = null;
+                if (!is_array($item)
+                    || $idPropertyIsInJson = array_key_exists($this->getIdProperty(), $item)
+                ) {
+                    if (count(self::$propertyPath) > self::ROOT_LIMIT_FOR_UPDATE) {
+                        /**
+                         * We don't care of other properties. We don't accept update on sub-entity, we can create or re-use
+                         * So here we just clean json and replace it with the id content
+                         */
+                        if ($idPropertyIsInJson) {
+                            $item = $item[$this->getIdProperty()];
+                        }
+
+                        array_pop(self::$propertyPath);
+
+                        $entity = $this->getFromDatabase($item);
+                    }
+
+                    if (!$entity
+                        && $idPropertyIsInJson) {
+                        $entity = $this->getFromDatabase($item[$this->getIdProperty()], static::RELATED_ENTITY);
+                    }
+                }
+
+                $entities[] = $this->buildEntity($item, $entity);
 
                 array_pop(self::$propertyPath);
             }

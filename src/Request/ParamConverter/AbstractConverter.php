@@ -21,6 +21,14 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 abstract class AbstractConverter implements ConverterInterface
 {
+    const HTTP_PUT = 'PUT';
+    const HTTP_POST = 'POST';
+
+    /**
+     * @var
+     */
+    protected $method;
+
     /**
      * @var array
      */
@@ -84,6 +92,9 @@ abstract class AbstractConverter implements ConverterInterface
      */
     public function apply(Request $request, ParamConverter $configuration)
     {
+        // will allow to manage Update vs Insert
+        $this->method = $request->getMethod();
+
         $content = $request->getContent();
 
         if (!$content) {
@@ -101,8 +112,6 @@ abstract class AbstractConverter implements ConverterInterface
                 sprintf('Wrong parameter to create new %s (generic)', static::RELATED_ENTITY),
                 420
             );
-
-            return false;
         }
 
         if ($raw
@@ -111,6 +120,38 @@ abstract class AbstractConverter implements ConverterInterface
         }
 
         return true;
+    }
+
+    /**
+     * Not exposed in ConverterInterface, it exists for testing purpose
+     *
+     * @return $this
+     */
+    final public function setInsertMode()
+    {
+        if ($this->method && $this->method !== self::HTTP_POST) {
+            throw new \RuntimeException('Http method can not be changed');
+        }
+
+        $this->method = self::HTTP_POST;
+
+        return $this;
+    }
+
+    /**
+     * Not exposed in ConverterInterface, it exists for testing purpose
+     *
+     * @return $this
+     */
+    final public function setUpdateMode()
+    {
+        if ($this->method && $this->method !== self::HTTP_PUT) {
+            throw new \RuntimeException('Http method can not be changed');
+        }
+
+        $this->method = self::HTTP_PUT;
+
+        return $this;
     }
 
     /**
@@ -174,10 +215,12 @@ abstract class AbstractConverter implements ConverterInterface
      * @throws RuntimeException
      * @throws \TypeError
      */
-    protected function buildEntity($json)
+    protected function buildEntity($json, $entity = null)
     {
-        $className = static::RELATED_ENTITY;
-        $entity = new $className();
+        if (!$entity) {
+            $className = static::RELATED_ENTITY;
+            $entity = new $className();
+        }
 
         $this->buildWithEzProps($json, $entity);
         $this->buildWithManyRelProps($json, $entity);
@@ -378,10 +421,12 @@ abstract class AbstractConverter implements ConverterInterface
      */
     protected function getFromDatabase($id, $class = null)
     {
-        if (!$class && static::RELATED_ENTITY) {
-            $class = static::RELATED_ENTITY;
-        } else {
-            throw new \InvalidArgumentException(sprintf('You must define constant RELATED_ENTITY form you ParamConverter %s', static::name));
+        if (!$class) {
+            if(static::RELATED_ENTITY) {
+                $class = static::RELATED_ENTITY;
+            } else {
+                throw new \InvalidArgumentException(sprintf('You must define constant RELATED_ENTITY form you ParamConverter %s', static::name));
+            }
         }
 
         $entityExists = $this->entityManager

@@ -9,12 +9,24 @@
 ## requirements
 
 You need PHP (7.x), composer, and Symfony 4
+Even if i didn't try without ApiPlatform, it should work without this component. We only use ValidationException from ApiPlatform Sf bridge because ApiPlatform rely on it to return HTTP 4x error.
+If your Api doesn't rely on this component, you will just have to add a listener on this kind of exception to manage the Response.   
 
 ## explanation
 
 Working with ApiPlatform, i wanted to use custom POST route where i could send complex json data which represents nested entities.
 To realize this i choose to use the ParamConverters. So with little convention (json props must be the same as php entity props)
 and few ParamConverters (one per entity) extending the Rebolon/Request/ItemAbstractConverter (for one entity) or ListAbstractConverter (for collection of entities), it works !
+
+For instance it works finely in **Creation** mode.
+Also, when you send sub-entities with all properties even an ID, then, the component consider that you want to use the existing entity with the specified ID.
+It will then ignore all other fields. This is a security to prevent update on sub-entities. But maybe this feature is missing and in this case, open an issue ! 
+
+When you do a PUT HTTP, only the rot entity will be updated. If you have nested entities with associative entities, it's up to you to manage the wished behavior in the Controller.
+The ParamConverter will not take any decision so:
+ * if you already have entries in this kind of relations, they will be kept, and those you specified in the JSON will be added
+ * if you want to replace those relations with the new ones, you will have to delete them (all relations that have ID are the old ones) in the Controller before persist the Book entity
+ * if you want to update those relations
 
 Here are some samples of json sent to the custom routes:
 

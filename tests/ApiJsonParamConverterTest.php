@@ -102,6 +102,7 @@ JSON;
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $bookConverter = $this->getBookConverter($entityManager);
 
+        $bookConverter->setInsertMode();
         $book = $bookConverter->initFromRequest(json_encode($content->book), 'book');
 
         $this->assertEquals($content->book->title, $book->getTitle());
@@ -141,6 +142,7 @@ JSON;
 
         $bookConverter = $this->getBookConverter($entityManager);
 
+        $bookConverter->setInsertMode();
         $book = $bookConverter->initFromRequest(json_encode($content->book), 'book');
 
         $this->assertEquals($content->book->title, $book->getTitle());
@@ -169,6 +171,7 @@ JSON;
 
         $bookConverter = $this->getBookConverter($entityManager);
 
+        $bookConverter->setInsertMode();
         $book = $bookConverter->initFromRequest(json_encode($content->book), 'book');
 
         $this->assertEquals($content->book->title, $book->getTitle());
@@ -188,6 +191,7 @@ JSON;
 
         $bookConverter = $this->getBookConverter($entityManager);
 
+        $bookConverter->setInsertMode();
         $bookConverter->initFromRequest(json_encode($content->book), 'book');
     }
 
