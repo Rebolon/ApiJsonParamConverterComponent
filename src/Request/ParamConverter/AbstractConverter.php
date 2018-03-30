@@ -203,29 +203,7 @@ abstract class AbstractConverter implements ConverterInterface
 
             $this->checkOperationsInfo($operationsInfo, 'getManyRelPropsName');
 
-            $relations = $operationsInfo['converter']->initFromRequest($json[$prop], $prop);
-
-            // I don't fond a quick way to use the propertyAccessor so i keep this for instance
-            $methodName = array_key_exists('setter', $operationsInfo) ? $operationsInfo['setter'] : null;
-            foreach ($relations as $relation) {
-                if (array_key_exists('cb', $operationsInfo)) {
-                    if (!is_callable($operationsInfo['cb'])) {
-                        throw new RuntimeException('cb in operations info must be callable');
-                    }
-
-                    $operationsInfo['cb']($relation, $entity);
-                }
-
-                if ($methodName) {
-                    $entity->$methodName($relation);
-                } else {
-                    try {
-                        $this->accessor->setValue($entity, $prop, $relation);
-                    } catch (\TypeError $e) {
-                        // @todo manage this with a log + a report to user with explanation on what have not been processed
-                    }
-                }
-            }
+            $entity = $this->manageRelationsBetweenChildsAndParent($entity, $operationsInfo, $json, $prop);
         }
 
         return $entity;
@@ -254,19 +232,72 @@ abstract class AbstractConverter implements ConverterInterface
             $relation = $operationsInfo['converter']->initFromRequest($json[$prop], $prop);
             $relationRegistered = $this->useRegistry($relation, $operationsInfo);
 
-            if (array_key_exists('setter', $operationsInfo)) {
-                $methodName = $operationsInfo['setter'];
-                $entity->$methodName($relationRegistered);
-            } else {
-                try {
-                    $this->accessor->setValue($entity, $prop, $relationRegistered);
-                } catch (\TypeError $e) {
-                    // @todo manage this with a log + a report to user with explanation on what have not been processed
-                }
+            $this->doAlterEntityWithSetter($entity, $operationsInfo, $prop, $relationRegistered);
+        }
+
+        return $entity;
+    }
+
+    /**
+     * @param EntityInterface $entity
+     * @param $operationsInfo
+     * @param $prop
+     * @param $relation
+     * @return EntityInterface
+     */
+    private function doAlterEntityWithSetter(EntityInterface $entity, $operationsInfo, $prop, $relation): EntityInterface
+    {
+        if (array_key_exists('setter', $operationsInfo)) {
+            // I don't fond a quick way to use the propertyAccessor so i keep this for instance
+            $methodName = $operationsInfo['setter'];
+            $entity->$methodName($relation);
+        } else {
+            try {
+                $this->accessor->setValue($entity, $prop, $relation);
+            } catch (\TypeError $e) {
+                // @todo manage this with a log + a report to user with explanation on what have not been processed
             }
         }
 
         return $entity;
+    }
+
+    /**
+     * @param EntityInterface $entity
+     * @param $operationsInfo
+     * @param $json
+     * @param $prop
+     * @return EntityInterface
+     */
+    private function manageRelationsBetweenChildsAndParent(EntityInterface $entity, $operationsInfo, $json, $prop): EntityInterface
+    {
+        $relations = $operationsInfo['converter']->initFromRequest($json[$prop], $prop);
+
+        foreach ($relations as $relation) {
+            $this->doCallback($entity, $operationsInfo, $relation);
+
+            $this->doAlterEntityWithSetter($entity, $operationsInfo, $prop, $relation);
+        }
+
+        return $entity;
+    }
+
+    /**
+     * @param EntityInterface $entity
+     * @param $operationsInfo
+     * @param $relation
+     */
+    private function doCallback(EntityInterface $entity, $operationsInfo, $relation): void
+    {
+        if (!array_key_exists('cb', $operationsInfo)) {
+            return;
+        }
+
+        if (!is_callable($operationsInfo['cb'])) {
+            throw new RuntimeException('cb in operations info must be callable');
+        }
+
+        $operationsInfo['cb']($relation, $entity);
     }
 
     /**
