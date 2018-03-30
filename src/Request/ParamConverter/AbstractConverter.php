@@ -53,7 +53,7 @@ abstract class AbstractConverter implements ConverterInterface
     protected $serializer;
 
     /**
-     * @var EntityManager
+     * @var EntityManagerInterface
      */
     protected $entityManager;
 
@@ -402,7 +402,7 @@ abstract class AbstractConverter implements ConverterInterface
         if (!$class && static::RELATED_ENTITY) {
             $class = static::RELATED_ENTITY;
         } else {
-            throw new \InvalidArgumentException(sprintf('You must define constant RELATED_ENTITY form you ParamConverter %s', static::name));
+            throw new \InvalidArgumentException(sprintf('You must define constant RELATED_ENTITY form you ParamConverter %s', static::NAME));
         }
 
         $entityExists = $this->entityManager
