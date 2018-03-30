@@ -87,7 +87,7 @@ abstract class AbstractConverter implements ConverterInterface
      */
     final protected function checkMandatoriesImplementations(): void {
         if (is_null(static::RELATED_ENTITY)
-            || !is_null(static::NAME)) {
+            || is_null(static::NAME)) {
             throw new RuntimeException('ParamConverter must overload following constants: RELATED_ENTITY & NAME');
         }
     }
