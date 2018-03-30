@@ -18,6 +18,8 @@ abstract class ListAbstractConverter extends AbstractConverter
      */
     public function initFromRequest($jsonOrArray, $propertyPath)
     {
+        $this->checkMandatoriesImplementations();
+
         self::$propertyPath[] = $propertyPath;
 
         $json = $this->checkJsonOrArray($jsonOrArray);

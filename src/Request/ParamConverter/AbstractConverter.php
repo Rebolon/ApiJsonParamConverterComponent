@@ -12,6 +12,7 @@ use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use \RuntimeException;
 
 /**
  * @todo there is maybe a way to mutualize the 3 methods buildWith*
@@ -21,6 +22,16 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 abstract class AbstractConverter implements ConverterInterface
 {
+    /**
+     * must be overload by child class
+     */
+    const NAME = null;
+
+    /**
+     * must be overload by child class
+     */
+    const RELATED_ENTITY = null;
+
     /**
      * @var array
      */
@@ -72,6 +83,16 @@ abstract class AbstractConverter implements ConverterInterface
     }
 
     /**
+     * @throws RuntimeException
+     */
+    final protected function checkMandatoriesImplementations(): void {
+        if (is_null(static::RELATED_ENTITY)
+            || !is_null(static::NAME)) {
+            throw new RuntimeException('ParamConverter must overload following constants: RELATED_ENTITY & NAME');
+        }
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function supports(ParamConverter $configuration)
@@ -101,8 +122,6 @@ abstract class AbstractConverter implements ConverterInterface
                 sprintf('Wrong parameter to create new %s (generic)', static::RELATED_ENTITY),
                 420
             );
-
-            return false;
         }
 
         if ($raw
@@ -125,6 +144,8 @@ abstract class AbstractConverter implements ConverterInterface
      */
     public function initFromRequest($jsonOrArray, $propertyPath)
     {
+        $this->checkMandatoriesImplementations();
+
         try {
             self::$propertyPath[] = $propertyPath;
 

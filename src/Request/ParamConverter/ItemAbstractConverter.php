@@ -18,6 +18,8 @@ abstract class ItemAbstractConverter extends AbstractConverter
      */
     public function initFromRequest($jsonOrArray, $propertyPath)
     {
+        $this->checkMandatoriesImplementations();
+
         try {
             self::$propertyPath[] = $propertyPath;
 
