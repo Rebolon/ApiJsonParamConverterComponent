@@ -14,6 +14,13 @@
 
 You need PHP (7.x), composer, and Symfony 4
 
+To get code coverage, don't forget that you need xDebug when you run PHPUnit or you will get this message: `Error:         No code coverage driver is available`
+If xDebug is not in the php configuration registered as your default php, you can run it manually:
+
+```
+PathToYouPHPWithXDebug vendor\phpunit\phpunit\phpunit
+```
+
 ## explanation
 
 Working with ApiPlatform, i wanted to use custom POST route where i could send complex json data which represents nested entities.
