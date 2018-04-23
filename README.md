@@ -3,6 +3,7 @@
 <p align="center">
 
   [![Build Status](https://travis-ci.org/Rebolon/ApiJsonParamConverterComponent.svg?branch=master)](https://travis-ci.org/Rebolon/php-sf-flex-webpack-encore-vuejs)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FRebolon%2FApiJsonParamConverterComponent.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FRebolon%2FApiJsonParamConverterComponent?ref=badge_shield)
   [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Rebolon/ApiJsonParamConverterComponent/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Rebolon/ApiJsonParamConverterComponent/badges/quality-score.png?b=master)
   [![Code Coverage](https://scrutinizer-ci.com/g/Rebolon/ApiJsonParamConverterComponent/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/Rebolon/ApiJsonParamConverterComponent/?branch=master)
   [![Code Intelligence Status](https://scrutinizer-ci.com/g/Rebolon/ApiJsonParamConverterComponent/badges/code-intelligence.svg?b=master)](https://scrutinizer-ci.com/code-intelligence)
@@ -131,3 +132,7 @@ services:
         tags:
             - { name: request.param_converter, priority: -2, converter: book }
 ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FRebolon%2FApiJsonParamConverterComponent.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FRebolon%2FApiJsonParamConverterComponent?ref=badge_large)
