@@ -69,6 +69,12 @@ abstract class AbstractConverter implements ConverterInterface
     protected $idProperty = 'id';
 
     /**
+     * List of arguments to pass to the entity constructor
+     * @var array
+     */
+    protected $constructorParams = [];
+
+    /**
      * AbstractConverter constructor.
      * @param ValidatorInterface $validator
      * @param SerializerInterface $serializer
@@ -148,7 +154,7 @@ abstract class AbstractConverter implements ConverterInterface
     protected function buildEntity($json)
     {
         $className = static::RELATED_ENTITY;
-        $entity = new $className();
+        $entity = new $className(...$this->constructorParams);
 
         $this->buildWithEzProps($json, $entity);
         $this->buildWithManyRelProps($json, $entity);

@@ -197,6 +197,7 @@ JSON;
      */
     public function getBookConverter($entityManager): BookConverter
     {
+        $logger = $this->createMock('\Psr\Log\LoggerInterface');
         $normalizers = [new JsonSerializableNormalizer(), new ArrayDenormalizer(), new ObjectNormalizer(),];
         $validator = Validation::createValidator();
         $jsonEncoder = new JsonEncoder();
@@ -208,7 +209,7 @@ JSON;
         $authorConverter = new AuthorConverter($validator, $serializer, $entityManager);
         $projectBookCreationConverter = new ProjectBookCreationConverter($validator, $serializer, $entityManager, $authorConverter);
         $serieConverter = new SerieConverter($validator, $serializer, $entityManager);
-        $bookConverter = new BookConverter($validator, $serializer, $entityManager, $projectBookCreationConverter, $serieConverter);
+        $bookConverter = new BookConverter($validator, $serializer, $entityManager, $projectBookCreationConverter, $serieConverter, $logger);
 
         return $bookConverter;
     }

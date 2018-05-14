@@ -3,6 +3,7 @@ namespace Rebolon\Tests\Fixtures\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Psr\Log\LoggerInterface;
 use Rebolon\Entity\EntityInterface;
 
 class Book implements EntityInterface
@@ -17,10 +18,14 @@ class Book implements EntityInterface
 
     /**
      * Book constructor.
+     * The params is only for sample purpose
+     *
+     * @param LoggerInterface $logger
      */
-    public function __construct()
+    public function __construct(LoggerInterface $logger)
     {
         $this->authors = new ArrayCollection();
+        $this->logger = $logger;
     }
 
     /**
