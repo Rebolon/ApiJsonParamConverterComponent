@@ -8,13 +8,30 @@ use Rebolon\Entity\EntityInterface;
 
 class Book implements EntityInterface
 {
+    /**
+     * @var int
+     */
     private $id;
 
+    /**
+     * @var string
+     */
     private $title;
 
+    /**
+     * @var Serie
+     */
     private $serie;
 
+    /**
+     * @var ArrayCollection
+     */
     private $authors;
+
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
 
     /**
      * Book constructor.
@@ -122,5 +139,16 @@ class Book implements EntityInterface
     public function getAuthors(): Collection
     {
         return $this->authors;
+    }
+
+    /**
+     * @param LoggerInterface $logger
+     * @return Book
+     */
+    public function setLogger(LoggerInterface $logger): Book
+    {
+        $this->logger = $logger;
+
+        return $this;
     }
 }

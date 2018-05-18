@@ -4,16 +4,23 @@
  */
 namespace Rebolon\Tests;
 
+use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
+use Rebolon\Tests\Fixtures\Entity\Book;
 use Rebolon\Tests\Fixtures\Entity\Serie;
 use Rebolon\Tests\Fixtures\Request\ParamConverter\BookConverter;
 use Rebolon\Tests\Fixtures\Request\ParamConverter\AuthorConverter;
 use Rebolon\Tests\Fixtures\Request\ParamConverter\ProjectBookCreationConverter;
 use Rebolon\Tests\Fixtures\Request\ParamConverter\SerieConverter;
+use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
+use Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
@@ -103,6 +110,49 @@ JSON;
         $bookConverter = $this->getBookConverter($entityManager);
 
         $book = $bookConverter->initFromRequest(json_encode($content->book), 'book');
+
+        $this->assertEquals($content->book->title, $book->getTitle());
+        $this->assertEquals($content->book->serie->name, $book->getSerie()->getName());
+        $this->assertCount(3, $book->getAuthors());
+
+        $this->assertEquals($content->book->authors[0]->author->firstname, $book->getAuthors()[0]->getAuthor()->getFirstname());
+        $this->assertEquals($content->book->authors[0]->author->lastname, $book->getAuthors()[0]->getAuthor()->getLastname());
+
+        $this->assertEquals($content->book->authors[2]->author->firstname, $book->getAuthors()[2]->getAuthor()->getFirstname());
+        $this->assertEquals($content->book->authors[2]->author->lastname, $book->getAuthors()[2]->getAuthor()->getLastname());
+
+        // check that there is only 2 different Authors
+        $this->assertEquals($book->getAuthors()[0], $book->getAuthors()[1]);
+        $this->assertNotEquals($book->getAuthors()[1], $book->getAuthors()[2]);
+    }
+
+    /**
+     * @group git-pre-push
+     */
+    public function testWithAllEntitiesToBeCreatedExcept2AuthorsInsteadOf3_WithSfSerializer()
+    {
+        $content = $this->bodyOk;
+
+        //@todo test with: use ArrayDenormalizer when getting a list of books in json like described in slide 70 of https://speakerdeck.com/dunglas/mastering-the-symfony-serializer
+
+        $classMetaDataFactory = new ClassMetadataFactory(
+            new AnnotationLoader(new AnnotationReader())
+        );
+        $objectNormalizer = new ObjectNormalizer($classMetaDataFactory, null, null, new PhpDocExtractor());
+        $serializer = new Serializer([
+            new DateTimeNormalizer(),
+            $objectNormalizer,
+        ], [
+            new JsonEncoder(),
+        ]);
+
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $book = $serializer->deserialize($content, Book::class, 'json', [
+            'default_constructor_arguments' => [
+                'logger' => $logger,
+            ]
+        ]);
 
         $this->assertEquals($content->book->title, $book->getTitle());
         $this->assertEquals($content->book->serie->name, $book->getSerie()->getName());
