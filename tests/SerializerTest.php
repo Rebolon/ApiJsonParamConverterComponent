@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Rebolon\Tests\Fixtures\Entity\Book;
+use Rebolon\Tests\Fixtures\Entity\EZBook;
 use Rebolon\Tests\Fixtures\Entity\Serie;
 use Rebolon\Tests\Fixtures\Request\ParamConverter\BookConverter;
 use Rebolon\Tests\Fixtures\Request\ParamConverter\AuthorConverter;
@@ -26,9 +27,36 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Validator\Validation;
 
-class ApiJsonParamConverterTest extends TestCase
+/**
+ * Class to test Symfony Serializer
+ *  One of the first errors i did, came from the JSON input that had a main 'book' property which is not required by the
+ *  Serializer => if i remember i also don't need it in my Converter because i deserialize it once to select only the children
+ *
+ * Class SerializerTest
+ * @package Rebolon\Tests
+ */
+class SerializerTest extends TestCase
 {
     /**
+     * @var string allow to test a correct HTTP Post with the ability of the ParamConverter to de-duplicate entity like for author in this sample
+     */
+    public $bodyOkSimple = <<<JSON
+{
+    "title": "Zombies in western culture"
+}
+JSON;
+
+    public $bodyOkSimpleWithSerie = <<<JSON
+{
+    "title": "Zombies in western culture",
+    "serie": {
+        "id": 4,
+        "name": "whatever, it won't be read"
+    }
+}
+JSON;
+
+/**
      * @var string allow to test a correct HTTP Post with the ability of the ParamConverter to de-duplicate entity like for author in this sample
      */
     public $bodyOk = <<<JSON
@@ -102,100 +130,57 @@ JSON;
     /**
      * @group git-pre-push
      */
-    public function testWithAllEntitiesToBeCreatedExcept2AuthorsInsteadOf3()
+    public function testSimpleBook()
     {
-        $content = json_decode($this->bodyOk);
+        $content = $this->bodyOkSimple;
+        $expected = json_decode($content);
 
-        $entityManager = $this->createMock(EntityManagerInterface::class);
-        $bookConverter = $this->getBookConverter($entityManager);
+        $serializer = new Serializer([
+            new DateTimeNormalizer(),
+            new ObjectNormalizer(),
+        ], [
+            new JsonEncoder(),
+        ]);
 
-        $book = $bookConverter->initFromRequest(json_encode($content->book), 'book');
+        $book = $serializer->deserialize($content, EZBook::class, 'json');
 
-        $this->assertEquals($content->book->title, $book->getTitle());
-        $this->assertEquals($content->book->serie->name, $book->getSerie()->getName());
-        $this->assertCount(3, $book->getAuthors());
-
-        $this->assertEquals($content->book->authors[0]->author->firstname, $book->getAuthors()[0]->getAuthor()->getFirstname());
-        $this->assertEquals($content->book->authors[0]->author->lastname, $book->getAuthors()[0]->getAuthor()->getLastname());
-
-        $this->assertEquals($content->book->authors[2]->author->firstname, $book->getAuthors()[2]->getAuthor()->getFirstname());
-        $this->assertEquals($content->book->authors[2]->author->lastname, $book->getAuthors()[2]->getAuthor()->getLastname());
-
-        // check that there is only 2 different Authors
-        $this->assertEquals($book->getAuthors()[0], $book->getAuthors()[1]);
-        $this->assertNotEquals($book->getAuthors()[1], $book->getAuthors()[2]);
+        $this->assertEquals($expected->title, $book->getTitle());
     }
 
     /**
      * @group git-pre-push
      */
-    public function testWithExistingEntity()
+    public function testWithSerie()
     {
-        $content = json_decode($this->bodyOkWithExistingEntities);
+        $content = $this->bodyOkSimpleWithSerie;
+        $expected = json_decode($content);
 
-        $serie = new Serie();
-        $serie->setName('Harry Potter');
+        //@todo test with: use ArrayDenormalizer when getting a list of books in json like described in slide 70 of https://speakerdeck.com/dunglas/mastering-the-symfony-serializer
 
-        $repository = $this->createMock(ObjectRepository::class);
-        $repository->expects($this->any())
-            ->method('find')
-            ->will($this->returnValue($serie));
+        $classMetaDataFactory = new ClassMetadataFactory(
+            new AnnotationLoader(
+                new AnnotationReader()
+            )
+        );
+        $objectNormalizer = new ObjectNormalizer($classMetaDataFactory, null, null, new PhpDocExtractor());
+        $serializer = new Serializer([
+            new DateTimeNormalizer(),
+            $objectNormalizer,
+        ], [
+            new JsonEncoder(),
+        ]);
 
-        $entityManager = $this->createMock(EntityManagerInterface::class);
-        $entityManager->expects($this->any())
-            ->method('getRepository')
-            ->will($this->returnValue($repository));
+        $logger = $this->createMock(LoggerInterface::class);
 
-        $bookConverter = $this->getBookConverter($entityManager);
+        $book = $serializer->deserialize($content, EZBook::class, 'json'/*, [
+            'default_constructor_arguments' => [
+                'logger' => $logger,
+            ]
+        ]*/);
 
-        $book = $bookConverter->initFromRequest(json_encode($content->book), 'book');
+        $this->assertEquals($expected->title, $book->getTitle());
+        $this->assertEquals($expected->serie->name, $book->getSerie()->getName());
 
-        $this->assertEquals($content->book->title, $book->getTitle());
-        $this->assertEquals($serie->getName(), $book->getSerie()->getName());
-    }
-
-    /**
-     * @group git-pre-push
-     */
-    public function testWithExistingEntityButWithFullProps()
-    {
-        $content = json_decode($this->bodyOkWithExistingEntitiesWithFullProps);
-
-        $serie = new Serie();
-        $serie->setName('Harry Potter');
-
-        $repository = $this->createMock(ObjectRepository::class);
-        $repository->expects($this->any())
-            ->method('find')
-            ->will($this->returnValue($serie));
-
-        $entityManager = $this->createMock(EntityManagerInterface::class);
-        $entityManager->expects($this->any())
-            ->method('getRepository')
-            ->will($this->returnValue($repository));
-
-        $bookConverter = $this->getBookConverter($entityManager);
-
-        $book = $bookConverter->initFromRequest(json_encode($content->book), 'book');
-
-        $this->assertEquals($content->book->title, $book->getTitle());
-        $this->assertEquals($serie->getName(), $book->getSerie()->getName());
-    }
-
-    /**
-     * @group git-pre-push
-     * @expectedException        \ApiPlatform\Core\Bridge\Symfony\Validator\Exception\ValidationException
-     * @expectedExceptionMessage Wrong parameter to create new Rebolon\Tests\Fixtures\Entity\Author (generic)
-     */
-    public function testWithWrongJson()
-    {
-        $content = json_decode($this->bodyNoAuthor);
-
-        $entityManager = $this->createMock(EntityManagerInterface::class);
-
-        $bookConverter = $this->getBookConverter($entityManager);
-
-        $bookConverter->initFromRequest(json_encode($content->book), 'book');
     }
 
     /**
