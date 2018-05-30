@@ -5,12 +5,24 @@ use Rebolon\Entity\EntityInterface;
 
 class ProjectBookCreation implements EntityInterface
 {
+    /**
+     * @var int
+     */
     private $id;
 
-    private $role;
+    /**
+     * @var Job
+     */
+    private $job;
 
-    private $book;
+    /**
+     * @var EZBook
+     */
+    //private $book;
 
+    /**
+     * @var Author
+     */
     private $author;
 
     /**
@@ -26,18 +38,18 @@ class ProjectBookCreation implements EntityInterface
     /**
      * @return Job
      */
-    public function getRole(): Job
+    public function getJob(): Job
     {
-        return $this->role;
+        return $this->job;
     }
 
     /**
-     * @param Job $role
+     * @param Job $job
      * @return ProjectBookCreation
      */
-    public function setRole(Job $role): ProjectBookCreation
+    public function setJob(Job $job): ProjectBookCreation
     {
-        $this->role = $role;
+        $this->job = $job;
 
         return $this;
     }
@@ -45,21 +57,21 @@ class ProjectBookCreation implements EntityInterface
     /**
      * @return Book
      */
-    public function getBook(): Book
-    {
-        return $this->book;
-    }
+//    public function getBook(): Book
+//    {
+//        return $this->book;
+//    }
 
     /**
      * @param Book $book
      * @return $this
      */
-    public function setBook(Book $book): ProjectBookCreation
-    {
-        $this->book = $book;
-
-        return $this;
-    }
+//    public function setBook(Book $book): ProjectBookCreation
+//    {
+//        $this->book = $book;
+//
+//        return $this;
+//    }
 
     /**
      * @return Author

@@ -12,6 +12,7 @@ use Psr\Log\LoggerInterface;
 use Rebolon\Tests\Fixtures\Entity\Book;
 use Rebolon\Tests\Fixtures\Entity\EZBook;
 use Rebolon\Tests\Fixtures\Entity\Serie;
+use Rebolon\Tests\Fixtures\Normalizer\ProjectBookCreation;
 use Rebolon\Tests\Fixtures\Request\ParamConverter\BookConverter;
 use Rebolon\Tests\Fixtures\Request\ParamConverter\AuthorConverter;
 use Rebolon\Tests\Fixtures\Request\ParamConverter\ProjectBookCreationConverter;
@@ -56,33 +57,34 @@ JSON;
 }
 JSON;
 
+    public $bodyOkSimpleWithCollectionOfSerie = <<<JSON
+{
+    "title": "Zombies in western culture",
+    "test_serie": [{
+        "id": 4,
+        "name": "whatever, it won't be read"
+    }, {
+        "id": 5,
+        "name": "Another thing"
+    }]
+}
+JSON;
+
 /**
      * @var string allow to test a correct HTTP Post with the ability of the ParamConverter to de-duplicate entity like for author in this sample
      */
-    public $bodyOk = <<<JSON
+    public $bodyOkSimpleWithAuthor = <<<JSON
 {
-    "book": {
-        "title": "Zombies in western culture",
-        "authors": [{
-            "author": {
-                "firstname": "Marc", 
-                "lastname": "O'Brien"
-            }
-        },{
-            "author": {
-                "firstname": "Marc", 
-                "lastname": "O'Brien"
-            }
-        }, {
-            "author": {
-                "firstname": "Paul", 
-                "lastname": "Kyprianou"
-            }
-        }],
-        "serie": {
-            "name": "Open Reports Series"
+    "title": "Zombies in western culture",
+    "authors": [{
+        "job": {
+            "translation": "writer"
+        },
+        "author": {
+            "firstname": "Marc", 
+            "lastname": "O'Brien"
         }
-    }
+    }]
 }
 JSON;
 
@@ -128,7 +130,7 @@ public $bodyNoAuthor = <<<JSON
 JSON;
 
     /**
-     * @group git-pre-push
+     * deserialize a simple json into a simple EZBook: only title props
      */
     public function testSimpleBook()
     {
@@ -148,7 +150,7 @@ JSON;
     }
 
     /**
-     * @group git-pre-push
+     * deserialize a more complex json with a serie inside the book
      */
     public function testWithSerie()
     {
@@ -165,6 +167,49 @@ JSON;
         $objectNormalizer = new ObjectNormalizer($classMetaDataFactory, null, null, new PhpDocExtractor());
         $serializer = new Serializer([
             new DateTimeNormalizer(),
+            $objectNormalizer,
+        ], [
+            new JsonEncoder(),
+        ]);
+
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $book = $serializer->deserialize($content, EZBook::class, 'json'/*, [
+            'default_constructor_arguments' => [
+                'logger' => $logger,
+            ]
+        ]*/);
+
+        $this->assertEquals($expected->title, $book->getTitle());
+        $this->assertEquals($expected->serie->name, $book->getSerie()->getName());
+
+    }
+
+    /**
+     * deserialize a really more complex json with an array of serie inside the testSerie property
+     *
+     * This test fail: i want to get a book with a collection of Serie in property testSerie
+     * For instance when the Serializer call the setTestSerie it sends the array of serie, but it doesn't contain an
+     * array of serie but an array of array when keys are props of serie, they are not yet deserialized into Serie
+     *
+     * @group git-pre-push
+     */
+    public function testWithCollectionOfSerie()
+    {
+        $content = $this->bodyOkSimpleWithCollectionOfSerie;
+        $expected = json_decode($content);
+
+        //@todo test with: use ArrayDenormalizer when getting a list of books in json like described in slide 70 of https://speakerdeck.com/dunglas/mastering-the-symfony-serializer
+
+        $classMetaDataFactory = new ClassMetadataFactory(
+            new AnnotationLoader(
+                new AnnotationReader()
+            )
+        );
+        $objectNormalizer = new ObjectNormalizer($classMetaDataFactory, null, null, new PhpDocExtractor());
+        $serializer = new Serializer([
+            new DateTimeNormalizer(),
+            new ArrayDenormalizer(),
             $objectNormalizer,
         ], [
             new JsonEncoder(),
