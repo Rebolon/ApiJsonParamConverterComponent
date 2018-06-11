@@ -24,12 +24,12 @@ class EZBook implements EntityInterface
     private $serie;
 
     /**
-     * @var ArrayCollection
+     * @var Serie[] | ArrayCollection
      */
     private $testSerie;
 
     /**
-     * @var ArrayCollection
+     * @var ProjectBookCreation[] | ArrayCollection
      */
     private $authors;
 
@@ -44,11 +44,11 @@ class EZBook implements EntityInterface
      *
      * @param LoggerInterface $logger
      */
-    public function __construct(/*LoggerInterface $logger*/)
+    public function __construct(LoggerInterface $logger)
     {
         $this->authors = new ArrayCollection();
         $this->testSerie = new ArrayCollection();
-        //$this->logger = $logger;
+        $this->logger = $logger;
     }
 
     /**
@@ -160,20 +160,40 @@ class EZBook implements EntityInterface
     }
 
     /**
-     * @param ArrayCollection $series
+     * This removeXXX is mandatory for the Serializer: it test if there is an addXX and remove XX to allow the usage of addXX (quite strange)
+     * If id doesn't exists then it will try the setter
+     *
+     * @param Serie $serie
+     *
+     * @return EZBook
+     */
+    public function removeTestSerie(Serie $serie): EZBook
+    {
+        $this->testSerie->removeElement($serie);
+
+        return $this;
+    }
+
+    /**
+     * @param Serie[]
      *
      * @return EZBook
      * @throws \Exception
      */
     public function setTestSerie(array $series): EZBook
     {
+        $collection = new ArrayCollection();
+
         foreach ($series as $serie) {
             if (!$serie instanceof Serie) {
+                // @todo use a better Exception
                 throw new \Exception('must be a Serie');
             }
 
-            $this->setAuthor($serie);
+            $collection->add($serie);
         }
+
+        $this->testSerie = $collection;
 
         return $this;
     }

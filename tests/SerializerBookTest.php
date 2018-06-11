@@ -5,49 +5,39 @@
 namespace Rebolon\Tests;
 
 use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\Persistence\ObjectRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Rebolon\Tests\Fixtures\Entity\Book;
 use Rebolon\Tests\Fixtures\Entity\EZBook;
-use Rebolon\Tests\Fixtures\Entity\Serie;
-use Rebolon\Tests\Fixtures\Normalizer\ProjectBookCreation;
-use Rebolon\Tests\Fixtures\Request\ParamConverter\BookConverter;
-use Rebolon\Tests\Fixtures\Request\ParamConverter\AuthorConverter;
-use Rebolon\Tests\Fixtures\Request\ParamConverter\ProjectBookCreationConverter;
-use Rebolon\Tests\Fixtures\Request\ParamConverter\SerieConverter;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
-use Symfony\Component\Serializer\Normalizer\JsonSerializableNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Validator\Validation;
 
 /**
  * Class to test Symfony Serializer
  *  One of the first errors i did, came from the JSON input that had a main 'book' property which is not required by the
  *  Serializer => if i remember i also don't need it in my Converter because i deserialize it once to select only the children
  *
- * Class SerializerTest
+ * Class SerializerBookTest
  * @package Rebolon\Tests
  */
-class SerializerTest extends TestCase
+class SerializerBookTest extends TestCase
 {
     /**
      * @var string allow to test a correct HTTP Post with the ability of the ParamConverter to de-duplicate entity like for author in this sample
      */
-    public $bodyOkSimple = <<<JSON
+    public $bookOkSimple = <<<JSON
 {
     "title": "Zombies in western culture"
 }
 JSON;
 
-    public $bodyOkSimpleWithSerie = <<<JSON
+    public $boookOkSimpleWithSerie = <<<JSON
 {
     "title": "Zombies in western culture",
     "serie": {
@@ -57,10 +47,10 @@ JSON;
 }
 JSON;
 
-    public $bodyOkSimpleWithCollectionOfSerie = <<<JSON
+    public $bookOkSimpleWithCollectionOfSerie = <<<JSON
 {
     "title": "Zombies in western culture",
-    "test_serie": [{
+    "testSerie": [{
         "id": 4,
         "name": "whatever, it won't be read"
     }, {
@@ -73,7 +63,7 @@ JSON;
 /**
      * @var string allow to test a correct HTTP Post with the ability of the ParamConverter to de-duplicate entity like for author in this sample
      */
-    public $bodyOkSimpleWithAuthor = <<<JSON
+    public $bookOkSimpleWithAuthor = <<<JSON
 {
     "title": "Zombies in western culture",
     "authors": [{
@@ -91,7 +81,7 @@ JSON;
     /**
      * @var string to test that the ParamConverter are abled to reuse entity from database
      */
-    public $bodyOkWithExistingEntities = <<<JSON
+    public $bookOkWithExistingEntities = <<<JSON
 {
     "book": {
         "title": "Oh my god, how simple it is !",
@@ -103,7 +93,7 @@ JSON;
     /**
      * @var string to test that the ParamConverter are abled to reuse entity from database
      */
-    public $bodyOkWithExistingEntitiesWithFullProps = <<<JSON
+    public $bookOkWithExistingEntitiesWithFullProps = <<<JSON
 {
     "book": {
         "title": "Oh my god, how simple it is !",
@@ -118,7 +108,7 @@ JSON;
     /**
      * @var string allow to test a failed HTTP Post with expected JSON content
      */
-public $bodyNoAuthor = <<<JSON
+public $bookNoAuthor = <<<JSON
 {
     "book": {
         "title": "Oh my god, how simple it is !",
@@ -134,11 +124,10 @@ JSON;
      */
     public function testSimpleBook()
     {
-        $content = $this->bodyOkSimple;
+        $content = $this->bookOkSimple;
         $expected = json_decode($content);
 
         $serializer = new Serializer([
-            new DateTimeNormalizer(),
             new ObjectNormalizer(),
         ], [
             new JsonEncoder(),
@@ -154,7 +143,7 @@ JSON;
      */
     public function testWithSerie()
     {
-        $content = $this->bodyOkSimpleWithSerie;
+        $content = $this->boookOkSimpleWithSerie;
         $expected = json_decode($content);
 
         //@todo test with: use ArrayDenormalizer when getting a list of books in json like described in slide 70 of https://speakerdeck.com/dunglas/mastering-the-symfony-serializer
@@ -196,11 +185,10 @@ JSON;
      */
     public function testWithCollectionOfSerie()
     {
-        $content = $this->bodyOkSimpleWithCollectionOfSerie;
+        $content = $this->bookOkSimpleWithCollectionOfSerie;
         $expected = json_decode($content);
 
         //@todo test with: use ArrayDenormalizer when getting a list of books in json like described in slide 70 of https://speakerdeck.com/dunglas/mastering-the-symfony-serializer
-
         $classMetaDataFactory = new ClassMetadataFactory(
             new AnnotationLoader(
                 new AnnotationReader()
@@ -208,46 +196,19 @@ JSON;
         );
         $objectNormalizer = new ObjectNormalizer($classMetaDataFactory, null, null, new PhpDocExtractor());
         $serializer = new Serializer([
-            new DateTimeNormalizer(),
             new ArrayDenormalizer(),
             $objectNormalizer,
         ], [
             new JsonEncoder(),
         ]);
 
-        $logger = $this->createMock(LoggerInterface::class);
-
-        $book = $serializer->deserialize($content, EZBook::class, 'json'/*, [
-            'default_constructor_arguments' => [
-                'logger' => $logger,
-            ]
-        ]*/);
+        $book = $serializer->deserialize($content, EZBook::class, 'json');
 
         $this->assertEquals($expected->title, $book->getTitle());
-        $this->assertEquals($expected->serie->name, $book->getSerie()->getName());
-
-    }
-
-    /**
-     * @param $entityManager
-     * @return BookConverter|void
-     */
-    public function getBookConverter($entityManager): BookConverter
-    {
-        $logger = $this->createMock('\Psr\Log\LoggerInterface');
-        $normalizers = [new JsonSerializableNormalizer(), new ArrayDenormalizer(), new ObjectNormalizer(),];
-        $validator = Validation::createValidator();
-        $jsonEncoder = new JsonEncoder();
-        $serializer = new Serializer($normalizers, [$jsonEncoder]);
-        foreach ($normalizers as $n) {
-            $n->setSerializer($serializer);
+        foreach ($expected->testSerie as $k => $serie) {
+            $this->assertEquals($serie->id, $book->getTestSerie()[$k]->getId());
+            $this->assertEquals($serie->name, $book->getTestSerie()[$k]->getName());
         }
 
-        $authorConverter = new AuthorConverter($validator, $serializer, $entityManager);
-        $projectBookCreationConverter = new ProjectBookCreationConverter($validator, $serializer, $entityManager, $authorConverter);
-        $serieConverter = new SerieConverter($validator, $serializer, $entityManager);
-        $bookConverter = new BookConverter($validator, $serializer, $entityManager, $projectBookCreationConverter, $serieConverter, $logger);
-
-        return $bookConverter;
     }
 }

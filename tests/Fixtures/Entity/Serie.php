@@ -5,8 +5,14 @@ use Rebolon\Entity\EntityInterface;
 
 class Serie implements EntityInterface
 {
+    /**
+     * @var integer
+     */
     private $id;
 
+    /**
+     * @var string
+     */
     private $name;
 
     /**
@@ -16,6 +22,17 @@ class Serie implements EntityInterface
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * @param int $id
+     * @return Serie
+     */
+    public function setId(int $id): Serie
+    {
+        $this->id = $id;
+
+        return $this;
     }
 
     /**

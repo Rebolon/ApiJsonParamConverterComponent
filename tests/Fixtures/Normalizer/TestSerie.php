@@ -4,16 +4,19 @@ namespace Rebolon\Tests\Fixtures\Normalizer;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Collections\ArrayCollection;
+use Rebolon\Tests\Fixtures\Entity\EZBook;
+use Rebolon\Tests\Fixtures\Entity\Serie;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader;
 use Symfony\Component\Serializer\Serializer;
 
-class ProjectBookCreation extends ObjectNormalizer implements DenormalizerInterface
+class TestSerie extends ObjectNormalizer implements DenormalizerInterface
 {
     public function denormalize($object, $class, $format = null, array $context = array())
     {
@@ -30,17 +33,11 @@ class ProjectBookCreation extends ObjectNormalizer implements DenormalizerInterf
             new JsonEncoder(),
         ]);
 
-        $authors = new ArrayCollection();
-        foreach ($object->authors as $author) {
-            $authors->add($serializer->deserialize(json_encode($author), sprintf('%s[]', \Rebolon\Tests\Fixtures\Entity\ProjectBookCreation::class)));
+        foreach ($object->test_serie as $serie) {
+            $object->addTestSerie($serializer->deserialize(json_encode($serie), Serie::class));
         }
 
-        $project = new \Rebolon\Tests\Fixtures\Entity\ProjectBookCreation();
-        $project->setAuthor($author);
-
-        return [
-            'project_book_creation' => $authors,
-        ];
+        return $object;
     }
 
     public function supportsDenormalization($data, $type, $format = null)
