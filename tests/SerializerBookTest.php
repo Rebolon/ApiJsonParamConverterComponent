@@ -47,15 +47,19 @@ JSON;
 }
 JSON;
 
-    public $bookOkSimpleWithCollectionOfSerie = <<<JSON
+    public $bookOkSimpleWithCollectionOfReview = <<<JSON
 {
     "title": "Zombies in western culture",
-    "testSerie": [{
+    "reviews": [{
         "id": 4,
-        "name": "whatever, it won't be read"
+        "content": "this book is so cool",
+        "date": "2018-05-17T00:00:00+00:00",
+        "username": "Joe654"
     }, {
         "id": 5,
-        "name": "Another thing"
+        "content": "hey it's awesome !",
+        "date": "2018-05-22T00:00:00+00:00",
+        "username": "Niko9342"
     }]
 }
 JSON;
@@ -163,11 +167,11 @@ JSON;
 
         $logger = $this->createMock(LoggerInterface::class);
 
-        $book = $serializer->deserialize($content, EZBook::class, 'json'/*, [
+        $book = $serializer->deserialize($content, EZBook::class, 'json', [
             'default_constructor_arguments' => [
-                'logger' => $logger,
+                LoggerInterface::class => $logger,
             ]
-        ]*/);
+        ]);
 
         $this->assertEquals($expected->title, $book->getTitle());
         $this->assertEquals($expected->serie->name, $book->getSerie()->getName());
@@ -183,9 +187,9 @@ JSON;
      *
      * @group git-pre-push
      */
-    public function testWithCollectionOfSerie()
+    public function testWithCollectionOfReview()
     {
-        $content = $this->bookOkSimpleWithCollectionOfSerie;
+        $content = $this->bookOkSimpleWithCollectionOfReview;
         $expected = json_decode($content);
 
         //@todo test with: use ArrayDenormalizer when getting a list of books in json like described in slide 70 of https://speakerdeck.com/dunglas/mastering-the-symfony-serializer
@@ -197,6 +201,7 @@ JSON;
         $objectNormalizer = new ObjectNormalizer($classMetaDataFactory, null, null, new PhpDocExtractor());
         $serializer = new Serializer([
             new ArrayDenormalizer(),
+            new DateTimeNormalizer(),
             $objectNormalizer,
         ], [
             new JsonEncoder(),
@@ -205,9 +210,11 @@ JSON;
         $book = $serializer->deserialize($content, EZBook::class, 'json');
 
         $this->assertEquals($expected->title, $book->getTitle());
-        foreach ($expected->testSerie as $k => $serie) {
-            $this->assertEquals($serie->id, $book->getTestSerie()[$k]->getId());
-            $this->assertEquals($serie->name, $book->getTestSerie()[$k]->getName());
+        foreach ($expected->reviews as $k => $review) {
+            $this->assertEquals($review->id, $book->getReviews()[$k]->getId());
+            $this->assertEquals($review->content, $book->getReviews()[$k]->getContent());
+            $this->assertEquals($review->date, $book->getReviews()[$k]->getDate()->format('c'));
+            $this->assertEquals($review->username, $book->getReviews()[$k]->getUsername());
         }
 
     }

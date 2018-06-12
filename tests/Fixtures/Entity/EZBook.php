@@ -24,9 +24,9 @@ class EZBook implements EntityInterface
     private $serie;
 
     /**
-     * @var Serie[] | ArrayCollection
+     * @var Review[] | ArrayCollection
      */
-    private $testSerie;
+    private $reviews;
 
     /**
      * @var ProjectBookCreation[] | ArrayCollection
@@ -36,7 +36,7 @@ class EZBook implements EntityInterface
     /**
      * @var LoggerInterface
      */
-    //private $logger;
+    private $logger;
 
     /**
      * Book constructor.
@@ -44,11 +44,11 @@ class EZBook implements EntityInterface
      *
      * @param LoggerInterface $logger
      */
-    public function __construct(LoggerInterface $logger)
+    public function __construct(/*LoggerInterface $logger*/)
     {
         $this->authors = new ArrayCollection();
-        $this->testSerie = new ArrayCollection();
-        $this->logger = $logger;
+        $this->reviews = new ArrayCollection();
+        /*$this->logger = $logger;*/
     }
 
     /**
@@ -71,7 +71,7 @@ class EZBook implements EntityInterface
 
     /**
      * @param mixed $title
-     * @return Book
+     * @return EZBook
      */
     public function setTitle($title): EZBook
     {
@@ -91,7 +91,7 @@ class EZBook implements EntityInterface
     /**
      * @param Serie $serie
      *
-     * @return Book
+     * @return EZBook
      */
     public function setSerie(Serie $serie): EZBook
     {
@@ -103,7 +103,7 @@ class EZBook implements EntityInterface
     /**
      * @param ProjectBookCreation $project
      *
-     * @return Book
+     * @return EZBook
      */
     public function setAuthor(ProjectBookCreation $project): EZBook
     {
@@ -115,7 +115,7 @@ class EZBook implements EntityInterface
     /**
      * @param Author $author
      * @param Job $job
-     * @return Book
+     * @return EZBook
      */
     public function addAuthor(Author $author, Job $job): EZBook
     {
@@ -148,13 +148,13 @@ class EZBook implements EntityInterface
     }
 
     /**
-     * @param Serie $serie
+     * @param Review $review
      *
      * @return EZBook
      */
-    public function addTestSerie(Serie $serie): EZBook
+    public function addReviews(Review $review): EZBook
     {
-        $this->testSerie[] = $serie;
+        $this->reviews[] = $review;
 
         return $this;
     }
@@ -163,47 +163,47 @@ class EZBook implements EntityInterface
      * This removeXXX is mandatory for the Serializer: it test if there is an addXX and remove XX to allow the usage of addXX (quite strange)
      * If id doesn't exists then it will try the setter
      *
-     * @param Serie $serie
+     * @param Review $review
      *
      * @return EZBook
      */
-    public function removeTestSerie(Serie $serie): EZBook
+    public function removeReviews(Review $review): EZBook
     {
-        $this->testSerie->removeElement($serie);
+        $this->reviews->removeElement($review);
 
         return $this;
     }
 
     /**
-     * @param Serie[]
+     * @param Review[]
      *
      * @return EZBook
      * @throws \Exception
      */
-    public function setTestSerie(array $series): EZBook
+    public function setReviews(array $reviews): EZBook
     {
         $collection = new ArrayCollection();
 
-        foreach ($series as $serie) {
-            if (!$serie instanceof Serie) {
+        foreach ($reviews as $review) {
+            if (!$review instanceof Review) {
                 // @todo use a better Exception
-                throw new \Exception('must be a Serie');
+                throw new \Exception('must be a Review');
             }
 
-            $collection->add($serie);
+            $collection->add($review);
         }
 
-        $this->testSerie = $collection;
+        $this->reviews = $collection;
 
         return $this;
     }
 
     /**
-     * @return Collection
+     * @return Review[] | ArrayCollection
      */
-    public function getTestSerie(): ArrayCollection
+    public function getReviews(): ArrayCollection
     {
-        return $this->testSerie;
+        return $this->reviews;
     }
 
     /**
