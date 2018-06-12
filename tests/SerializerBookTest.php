@@ -169,8 +169,8 @@ JSON;
 
         $book = $serializer->deserialize($content, EZBook::class, 'json', [
             'default_constructor_arguments' => [
-                LoggerInterface::class => $logger,
-            ]
+                EZBook::class => ['logger' => $logger, ]
+            ],
         ]);
 
         $this->assertEquals($expected->title, $book->getTitle());

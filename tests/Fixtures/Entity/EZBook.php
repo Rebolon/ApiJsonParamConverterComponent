@@ -44,11 +44,11 @@ class EZBook implements EntityInterface
      *
      * @param LoggerInterface $logger
      */
-    public function __construct(/*LoggerInterface $logger*/)
+    public function __construct(LoggerInterface $logger)
     {
         $this->authors = new ArrayCollection();
         $this->reviews = new ArrayCollection();
-        /*$this->logger = $logger;*/
+        $this->logger = $logger;
     }
 
     /**
