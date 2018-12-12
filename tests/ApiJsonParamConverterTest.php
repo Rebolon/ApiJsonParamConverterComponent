@@ -178,7 +178,7 @@ JSON;
     /**
      * @group git-pre-push
      * @expectedException        \ApiPlatform\Core\Bridge\Symfony\Validator\Exception\ValidationException
-     * @expectedExceptionMessage Wrong parameter to create new Rebolon\Tests\Fixtures\Entity\Author (generic)
+     * @expectedExceptionMessage book.authors[0].author: jsonOrArray for author must be string or array
      */
     public function testWithWrongJson()
     {

@@ -91,7 +91,8 @@ abstract class AbstractConverter implements ConverterInterface
     /**
      * @throws RuntimeException
      */
-    final protected function checkMandatoriesImplementations(): void {
+    final protected function checkMandatoriesImplementations(): void
+    {
         if (is_null(static::RELATED_ENTITY)
             || is_null(static::NAME)) {
             throw new RuntimeException('ParamConverter must overload following constants: RELATED_ENTITY & NAME');
@@ -141,7 +142,8 @@ abstract class AbstractConverter implements ConverterInterface
     /**
      * @inheritdoc
      */
-    public function getIdProperty(): string {
+    public function getIdProperty(): string
+    {
         return $this->idProperty;
     }
 
@@ -316,10 +318,13 @@ abstract class AbstractConverter implements ConverterInterface
         $json = is_string($jsonOrArray) ? json_decode($jsonOrArray, true) : $jsonOrArray;
 
         // test if invalid json, should i use json_last_error ?
-        if (!$json) {
+        if (is_string($jsonOrArray)
+            && json_last_error()
+            || !$json) {
             $violationList = new ConstraintViolationList();
+            $properties = array_values(self::$propertyPath);
             $violation = new ConstraintViolation(
-                sprintf('jsonOrArray for %s must be string or array', end(array_values(self::$propertyPath))),
+                sprintf('jsonOrArray for %s must be string or array', end($properties)),
                 null,
                 [],
                 $jsonOrArray,
