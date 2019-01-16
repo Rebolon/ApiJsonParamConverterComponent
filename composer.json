@@ -6,21 +6,21 @@
     "license": "MIT",
     "require": {
         "php": "^7.1",
-        "doctrine/orm": "2.6.*",
-        "symfony/validator": "4.1.*",
-        "symfony/http-foundation": "4.1.*",
-        "symfony/property-access": "4.1.*",
-        "symfony/serializer": "4.1.*",
-        "sensio/framework-extra-bundle": "5.2.*",
+        "doctrine/orm": "^2.6.3",
+        "symfony/validator": "^4.1.9",
+        "symfony/http-foundation": "^4.1.9",
+        "symfony/property-access": "^4.1.9",
+        "symfony/serializer": "^4.1.9",
+        "sensio/framework-extra-bundle": "^5.2.3",
         "api-platform/core": "2.3.*"
     },
     "require-dev": {
-        "phpunit/phpunit": "6.5.*",
+        "phpunit/phpunit": "^7.5",
         "roave/security-advisories": "dev-master",
-        "sensiolabs/security-checker": "4.1.*",
-        "friendsofphp/php-cs-fixer": "2.13.*",
-        "squizlabs/PHP_CodeSniffer": "3.3.*",
-        "doctrine/common": "2.9.*"
+        "sensiolabs/security-checker": "^4.1.9",
+        "friendsofphp/php-cs-fixer": "^2.13",
+        "squizlabs/PHP_CodeSniffer": "^3.4",
+        "doctrine/common": "^2.9.0"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
