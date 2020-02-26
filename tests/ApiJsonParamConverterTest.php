@@ -4,6 +4,7 @@
  */
 namespace Rebolon\Tests;
 
+use ApiPlatform\Core\Bridge\Symfony\Validator\Exception\ValidationException;
 use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
@@ -30,17 +31,17 @@ class ApiJsonParamConverterTest extends TestCase
         "title": "Zombies in western culture",
         "authors": [{
             "author": {
-                "firstname": "Marc", 
+                "firstname": "Marc",
                 "lastname": "O'Brien"
             }
         },{
             "author": {
-                "firstname": "Marc", 
+                "firstname": "Marc",
                 "lastname": "O'Brien"
             }
         }, {
             "author": {
-                "firstname": "Paul", 
+                "firstname": "Paul",
                 "lastname": "Kyprianou"
             }
         }],
@@ -177,8 +178,6 @@ JSON;
 
     /**
      * @group git-pre-push
-     * @expectedException        \ApiPlatform\Core\Bridge\Symfony\Validator\Exception\ValidationException
-     * @expectedExceptionMessage book.authors[0].author: jsonOrArray for author must be string or array
      */
     public function testWithWrongJson()
     {
@@ -188,6 +187,8 @@ JSON;
 
         $bookConverter = $this->getBookConverter($entityManager);
 
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessage('book.authors[0].author: jsonOrArray for author must be string or array');
         $bookConverter->initFromRequest(json_encode($content->book), 'book');
     }
 
